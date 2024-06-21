@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Form, UploadFile, File
+from fastapi import FastAPI, Form, UploadFile, File, status
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 
-from core.model import compute
+from .core.model import compute
 
 app = FastAPI()
 
@@ -11,9 +11,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
-async def get_home():
-    with open("static/index.html") as f:
-        return HTMLResponse(content=f.read())
+async def redirect():
+    """redirect to the main page on base url"""
+    return RedirectResponse('/static/index.html', status_code=status.HTTP_302_FOUND)
 
 
 @app.post("/modify-quote/")

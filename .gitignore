@@ -1,2 +1,4 @@
 /venv
 /.idea
+*.pyc
+modified_quote.txt
