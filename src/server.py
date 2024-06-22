@@ -1,32 +1,60 @@
 from fastapi import FastAPI, Form, UploadFile, File, status
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 
 from .core.model import compute
+from .core.document import WordDocument
 
 app = FastAPI()
 
 # Mount static html files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
-async def redirect():
+async def website():
     """redirect to the main page on base url"""
     return RedirectResponse('/static/index.html', status_code=status.HTTP_302_FOUND)
 
 
-@app.post("/modify-quote/")
-async def modify_quote(prompt: str = Form(...), file: UploadFile = File(...)):
-    content = await file.read()
-    content = content.decode('utf-8')
+@app.post("/modify")
+async def modify(prompt: str = Form(...), file: UploadFile = File(...)):
+    doc = WordDocument(file.file)
 
-    # Modify the text using OpenAI
-    modified_content = compute(f'Modifica il seguente preventivo secondo queste istruzioni:\n{prompt}\nPreventivo:\n{content}')
+    # make openai request
+    modified_content = compute(
+        f'Modifica il seguente preventivo secondo queste istruzioni:\n{prompt}\nPreventivo:\n{doc.text}'
+    )
 
-    output_path = "modified_quote.txt"
-    with open(output_path, "w") as output_file:
-        output_file.write(modified_content)
+    # build document for output
+    buffer = doc.docx(modified_content)
 
-    # Restituisci il file modificato come risposta
-    return FileResponse(output_path, media_type='text/plain', filename='modified_quote.txt')
+    return StreamingResponse(
+        buffer,
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="modified_document.docx"'}
+    )
+
+
+@app.post("/create")
+async def create(premessa: str = Form(...), costo: str = Form(...), dettaglio_tecnico: str = Form(...),
+                 accordo_confidenziali: str = Form(...), contatti: str = Form(...)):
+
+    # make openai request
+    modified_content = compute(
+        f'Crea un preventivo con queste sezioni:\n'
+        f'Premessa: {premessa}\n'
+        f'Dettagli Tecnici: {dettaglio_tecnico}\n'
+        f'Sezione Costi: {costo}\n'
+        f'Accordi Confidenziali: {accordo_confidenziali}\n'
+        f'Contatti: {contatti}\n'
+    )
+
+    # build document for output
+    buffer = WordDocument.docx(modified_content)
+
+    return StreamingResponse(
+        buffer,
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="new_document.docx"'}
+    )

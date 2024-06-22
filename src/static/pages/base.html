@@ -8,15 +8,15 @@
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="card" style="width: 100%; max-width: 600px;">
             <div class="card-body">
-                <h1 class="card-title text-center">Carica un preventivo e un prompt per modificarlo</h1>
+                <h1 class="card-title text-center">Carica un preventivo per modificarlo</h1>
                 <form id="quote-form" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="prompt">Prompt:</label>
-                        <textarea class="form-control" id="prompt" name="prompt" rows="4"></textarea>
-                    </div>
                     <div class="form-group">
                         <label for="file">Seleziona il file del preventivo:</label>
                         <input type="file" class="form-control-file" id="file" name="file">
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt">Prompt:</label>
+                        <textarea class="form-control" id="prompt" name="prompt" rows="4"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Invia</button>
                 </form>
@@ -35,18 +35,24 @@
             formData.append('prompt', document.getElementById('prompt').value);
             formData.append('file', document.getElementById('file').files[0]);
 
-            const response = await fetch('/modify-quote/', {
+            const response = await fetch('/modify', {
                 method: 'POST',
                 body: formData
             });
 
             if (response.ok) {
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const fileNameRegex = /filename="([^"]+)"/;
+                const matches = fileNameRegex.exec(contentDisposition);
+                const defaultFileName = 'modified_example.docx';
+                const fileName = matches ? matches[1] : defaultFileName;
+
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'modified_quote.txt';
+                a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);

@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+
+  core:
+    container_name: contex-generator
+    image: contex-generator:latest
+    build: .
+    restart: always
+    ports:
+      - "8000:80"
+    environment:
+      - DEBUG=false
+    env_file:
+      - .env

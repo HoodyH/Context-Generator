@@ -6,17 +6,21 @@ client = OpenAI(
 )
 
 
-def compute(prompt, max_tokens: int = 200):
-    # response = client.chat.completions.create(
-    #     messages=[
-    #         {
-    #             "role": "user",
-    #             "content": f"Domanda: {question}\n Risposta:",
-    #         }
-    #     ],
-    #     max_tokens=50,
-    #     model="gpt-3.5-turbo",
-    # )
+def compute(prompt, max_tokens: int = 3000) -> str:
+    response = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        max_tokens=max_tokens,
+        model="gpt-4o",
+    )
+    return response.choices[0].message.content.strip()
+
+
+def compute_base(prompt, max_tokens: int = 3000) -> str:
 
     response = client.completions.create(
         model="davinci-002",

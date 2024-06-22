@@ -8,31 +8,27 @@
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="card" style="width: 100%; max-width: 600px;">
             <div class="card-body">
-                <h1 class="card-title text-center">Carica un preventivo e un prompt per modificarlo</h1>
+                <h1 class="card-title text-center">Crea un nuovo preventivo</h1>
                 <form id="quote-form" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label for="prompt">Prompt:</label>
-                        <textarea class="form-control" id="prompt" name="prompt" rows="4"></textarea>
+                        <label for="premessa">Premessa:</label>
+                        <textarea class="form-control" id="premessa" name="premessa" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="company-name">Nome Azienda:</label>
-                        <input type="text" class="form-control" id="company-name" name="company_name">
+                        <label for="costo">Costo:</label>
+                        <textarea class="form-control" id="costo" name="costo" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="final-price">Prezzo Finale:</label>
-                        <input type="number" class="form-control" id="final-price" name="final_price" step="0.01">
+                        <label for="dettaglio-tecnico">Dettaglio Tecnico:</label>
+                        <textarea class="form-control" id="dettaglio-tecnico" name="dettaglio_tecnico" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="contact-person">Referente:</label>
-                        <input type="text" class="form-control" id="contact-person" name="contact_person">
+                        <label for="accordo-confidenziali">Accordi Confidenziali:</label>
+                        <textarea class="form-control" id="accordo-confidenziali" name="accordo_confidenziali" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="company-email">Mail Azienda:</label>
-                        <input type="email" class="form-control" id="company-email" name="company_email">
-                    </div>
-                    <div class="form-group">
-                        <label for="file">Seleziona il file del preventivo:</label>
-                        <input type="file" class="form-control-file" id="file" name="file">
+                        <label for="contatti">Contatti:</label>
+                        <textarea class="form-control" id="contatti" name="contatti" rows="4"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Invia</button>
                 </form>
@@ -48,25 +44,30 @@
         document.getElementById('quote-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData();
-            formData.append('prompt', document.getElementById('prompt').value);
-            formData.append('company_name', document.getElementById('company-name').value);
-            formData.append('final_price', document.getElementById('final-price').value);
-            formData.append('contact_person', document.getElementById('contact-person').value);
-            formData.append('company_email', document.getElementById('company-email').value);
-            formData.append('file', document.getElementById('file').files[0]);
+            formData.append('premessa', document.getElementById('premessa').value);
+            formData.append('costo', document.getElementById('costo').value);
+            formData.append('dettaglio_tecnico', document.getElementById('dettaglio-tecnico').value);
+            formData.append('accordo_confidenziali', document.getElementById('accordo-confidenziali').value);
+            formData.append('contatti', document.getElementById('contatti').value);
 
-            const response = await fetch('/modify-quote/', {
+            const response = await fetch('/create', {
                 method: 'POST',
                 body: formData
             });
 
             if (response.ok) {
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const fileNameRegex = /filename="([^"]+)"/;
+                const matches = fileNameRegex.exec(contentDisposition);
+                const defaultFileName = 'modified_example.docx';
+                const fileName = matches ? matches[1] : defaultFileName;
+
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'modified_quote.txt';
+                a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
