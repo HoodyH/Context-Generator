@@ -11,14 +11,14 @@ Software requred to run the code or to develop
 
 Install dependencies
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r src/requirements.txt
 ```
 
 Run the app
 ```bash
 python main.py
 ```
-open the app at [localhost](http://127.0.0.1:8000)
+open the app at [localhost](http://127.0.0.1:8000) or use it in the ip host of the machine
 
 ## Run as a production docker container
 
@@ -33,7 +33,8 @@ docker-compose up -d
 
 Now you can open the app at [localhost](http://127.0.0.1:8000) or use it in the ip host of the machine
 
-To find the ip host use
+# Open as remote
+Find the ip host use
 ```bash
 ipconfig
 ```
